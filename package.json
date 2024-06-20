@@ -1,7 +1,7 @@
 {
   "name": "charsiu",
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot scripts/dev.ts"
   },
   "dependencies": {
     "hono": "^4.4.7"
