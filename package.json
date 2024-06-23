@@ -1,12 +1,17 @@
 {
   "name": "charsiu",
   "scripts": {
-    "dev": "bun run --hot scripts/dev.ts"
+    "dev": "bun run --hot server/index.ts & bunx --bun vite"
   },
   "dependencies": {
     "hono": "^4.4.7"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@vitejs/plugin-vue": "^5.0.5",
+    "@vitejs/plugin-vue-jsx": "^4.0.0",
+    "vite": "^5.3.1",
+    "vue": "^3.4.30",
+    "vue-router": "^4.4.0"
   }
 }
