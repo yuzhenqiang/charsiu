@@ -5,7 +5,8 @@
     "build": "vite build"
   },
   "dependencies": {
-    "hono": "^4.4.7"
+    "hono": "^4.4.7",
+    "mime": "^4.0.3"
   },
   "devDependencies": {
     "@types/bun": "latest",
