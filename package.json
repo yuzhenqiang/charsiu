@@ -1,7 +1,8 @@
 {
   "name": "charsiu",
   "scripts": {
-    "dev": "bun run --hot server/index.ts & bunx --bun vite"
+    "dev": "bun run --hot server/index.ts & bunx --bun vite",
+    "build": "vite build"
   },
   "dependencies": {
     "hono": "^4.4.7"
