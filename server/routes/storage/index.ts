@@ -43,7 +43,7 @@ storage.get('*', async (ctx) => {
 })
 
 // 新增文件或目录
-storage.post('*', zValidator('form', z.object({ overwrite: z.enum(['Y', 'N']), name: z.string(), file: z.instanceof(File).optional() })), async (ctx) => {
+storage.post('*', zValidator('form', z.object({ overwrite: z.enum(['Y', 'N']), name: z.string().min(1), file: z.instanceof(File).optional() })), async (ctx) => {
   /** 请求目录 */
   const storagePath = getStoragePath(ctx)
   /** 真实目录 */
