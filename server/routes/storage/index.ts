@@ -83,11 +83,11 @@ storage.put('*', zValidator('json', z.object({ source: z.string().min(1), dest: 
   const isSourceExists = await exists(sourcePath)
   if (!isSourceExists) throw new HTTPException(500, { message: '文件或目录不存在', cause: { errno: Errno.FS_Exists } })
   /** 目标路径 */
-  const targetPath = join(realDir, dest)
+  const destPath = join(realDir, dest)
   // 验证目标路径是否于存储库下
-  if (targetPath.indexOf(realDir) !== 0) throw new HTTPException(500, { message: '目标路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
+  if (destPath.indexOf(realDir) !== 0) throw new HTTPException(500, { message: '目标路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
 
-  await rename(sourcePath, targetPath)
+  await rename(sourcePath, destPath)
 
-  return ctx.json({ path: targetPath, message: '操作成功' })
+  return ctx.json({ path: destPath, message: '操作成功' })
 })
