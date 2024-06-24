@@ -8,12 +8,14 @@ import { write } from 'bun';
 import { HTTPException } from 'hono/http-exception'
 import { Errno } from '../../../interface/errno';
 
+const STORAGE_PATH = resolve(process.env.STORAGE_PATH || './storage')
+
 export const storage = new Hono()
 
 /** 解析请求的目录 */
 const getStoragePath = (ctx: Context) => ctx.req.path.slice(ctx.req.routePath.length - 2)
 /** 获取真实目录路径 */
-const getRealDir = (relativePath: string) => resolve(join(process.env.STORAGE_PATH!, relativePath))
+const getRealDir = (relativePath: string) => join(STORAGE_PATH, relativePath)
 
 
 
@@ -78,14 +80,14 @@ storage.put('*', zValidator('json', z.object({ source: z.string().min(1), dest: 
   /** 源路径 */
   const sourcePath = join(realDir, source)
   // 验证源路径是否于存储库下
-  if (sourcePath.indexOf(realDir) !== 0) throw new HTTPException(500, { message: '源路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
+  if (sourcePath.indexOf(STORAGE_PATH) !== 0) throw new HTTPException(500, { message: '源路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
   // 验证源路径是否存在
   const isSourceExists = await exists(sourcePath)
   if (!isSourceExists) throw new HTTPException(500, { message: '文件或目录不存在', cause: { errno: Errno.FS_Not_Exists } })
   /** 目标路径 */
   const destPath = join(realDir, dest)
   // 验证目标路径是否于存储库下
-  if (destPath.indexOf(realDir) !== 0) throw new HTTPException(500, { message: '目标路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
+  if (destPath.indexOf(STORAGE_PATH) !== 0) throw new HTTPException(500, { message: '目标路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
 
   await rename(sourcePath, destPath)
 
@@ -103,7 +105,7 @@ storage.delete('*', zValidator('json', z.object({ dest: z.string().min(1) })), a
   /** 目标路径 */
   const destPath = join(realDir, dest)
   // 验证目标路径是否于存储库下
-  if (destPath.indexOf(realDir) !== 0) throw new HTTPException(500, { message: '目标路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
+  if (destPath.indexOf(STORAGE_PATH) !== 0) throw new HTTPException(500, { message: '目标路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
 
   await rm(destPath, { recursive: true })
   return ctx.json({ path: destPath, message: '操作成功' })
@@ -119,14 +121,14 @@ storage.on('copy', '*', zValidator('json', z.object({ source: z.string().min(1),
   /** 源路径 */
   const sourcePath = join(realDir, source)
   // 验证源路径是否于存储库下
-  if (sourcePath.indexOf(realDir) !== 0) throw new HTTPException(500, { message: '源路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
+  if (sourcePath.indexOf(STORAGE_PATH) !== 0) throw new HTTPException(500, { message: '源路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
   // 验证源路径是否存在
   const isSourceExists = await exists(sourcePath)
   if (!isSourceExists) throw new HTTPException(500, { message: '文件或目录不存在', cause: { errno: Errno.FS_Not_Exists } })
   /** 目标路径 */
   const destPath = join(realDir, dest)
   // 验证目标路径是否于存储库下
-  if (destPath.indexOf(realDir) !== 0) throw new HTTPException(500, { message: '目标路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
+  if (destPath.indexOf(STORAGE_PATH) !== 0) throw new HTTPException(500, { message: '目标路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
   // 验证目标路径是否存在
   const isDestExists = await exists(destPath)
   if (isDestExists) throw new HTTPException(500, { message: '文件或目录已存在', cause: { errno: Errno.FS_Exists } })
