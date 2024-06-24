@@ -29,6 +29,10 @@ app.onError(async (err, ctx) => {
         message = '此路径并非文件夹'
         errno = Errno.FS_Not_Dir
         break
+      case 'EPERM':
+        message = '操作不允许'
+        errno = Errno.FS_Not_Permitted
+        break
       default:
         message = '文件系统错误'
         errno = Errno.FS_Error

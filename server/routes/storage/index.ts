@@ -1,5 +1,5 @@
 import { resolve, join } from 'node:path'
-import { readdir, stat, mkdir, exists } from 'node:fs/promises'
+import { readdir, stat, mkdir, exists, rename } from 'node:fs/promises'
 import { Context, Hono } from "hono";
 import mime from 'mime'
 import { zValidator } from '@hono/zod-validator';
@@ -66,4 +66,28 @@ storage.post('*', zValidator('form', z.object({ overwrite: z.enum(['Y', 'N']), n
     await write(realFilepath, file)
   }
   return ctx.json({ path: relativeFilepath, message: '操作成功' })
+})
+
+// 修改文件或目录名，或移动位置
+storage.put('*', zValidator('json', z.object({ source: z.string().min(1), dest: z.string().min(1) })), async (ctx) => {
+  /** 请求目录 */
+  const storagePath = getStoragePath(ctx)
+  /** 真实目录 */
+  const realDir = getRealDir(storagePath)
+  const { source, dest } = ctx.req.valid('json')
+  /** 源路径 */
+  const sourcePath = join(realDir, source)
+  // 验证源路径是否于存储库下
+  if (sourcePath.indexOf(realDir) !== 0) throw new HTTPException(500, { message: '源路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
+  // 验证源路径是否存在
+  const isSourceExists = await exists(sourcePath)
+  if (!isSourceExists) throw new HTTPException(500, { message: '文件或目录不存在', cause: { errno: Errno.FS_Exists } })
+  /** 目标路径 */
+  const targetPath = join(realDir, dest)
+  // 验证目标路径是否于存储库下
+  if (targetPath.indexOf(realDir) !== 0) throw new HTTPException(500, { message: '目标路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
+
+  await rename(sourcePath, targetPath)
+
+  return ctx.json({ path: targetPath, message: '操作成功' })
 })
