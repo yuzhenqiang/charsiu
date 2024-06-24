@@ -1,4 +1,4 @@
-import { join } from 'node:path'
+import { resolve, join } from 'node:path'
 import { readdir, stat, mkdir, exists } from 'node:fs/promises'
 import { Context, Hono } from "hono";
 import mime from 'mime'
@@ -13,7 +13,7 @@ export const storage = new Hono()
 /** 解析请求的目录 */
 const getStoragePath = (ctx: Context) => ctx.req.path.slice(ctx.req.routePath.length - 2)
 /** 获取真实目录路径 */
-const getRealDir = (relativePath: string) => join(process.env.STORAGE_PATH!, relativePath)
+const getRealDir = (relativePath: string) => resolve(join(process.env.STORAGE_PATH!, relativePath))
 
 
 
