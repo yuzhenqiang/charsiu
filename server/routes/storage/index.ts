@@ -1,5 +1,5 @@
 import { resolve, join } from 'node:path'
-import { readdir, stat, mkdir, exists, rename, rm } from 'node:fs/promises'
+import { readdir, stat, mkdir, exists, rename, rm, cp } from 'node:fs/promises'
 import { Context, Hono } from "hono";
 import mime from 'mime'
 import { zValidator } from '@hono/zod-validator';
@@ -106,5 +106,31 @@ storage.delete('*', zValidator('json', z.object({ dest: z.string().min(1) })), a
   if (destPath.indexOf(realDir) !== 0) throw new HTTPException(500, { message: '目标路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
 
   await rm(destPath, { recursive: true })
+  return ctx.json({ path: destPath, message: '操作成功' })
+})
+
+// 复制文件或目录
+storage.on('copy', '*', zValidator('json', z.object({ source: z.string().min(1), dest: z.string().min(1) })), async (ctx) => {
+  /** 请求目录 */
+  const storagePath = getStoragePath(ctx)
+  /** 真实目录 */
+  const realDir = getRealDir(storagePath)
+  const { source, dest } = ctx.req.valid('json')
+  /** 源路径 */
+  const sourcePath = join(realDir, source)
+  // 验证源路径是否于存储库下
+  if (sourcePath.indexOf(realDir) !== 0) throw new HTTPException(500, { message: '源路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
+  // 验证源路径是否存在
+  const isSourceExists = await exists(sourcePath)
+  if (!isSourceExists) throw new HTTPException(500, { message: '文件或目录不存在', cause: { errno: Errno.FS_Not_Exists } })
+  /** 目标路径 */
+  const destPath = join(realDir, dest)
+  // 验证目标路径是否于存储库下
+  if (destPath.indexOf(realDir) !== 0) throw new HTTPException(500, { message: '目标路径无操作权限', cause: { errno: Errno.FS_No_Permissions } })
+  // 验证目标路径是否存在
+  const isDestExists = await exists(destPath)
+  if (isDestExists) throw new HTTPException(500, { message: '文件或目录已存在', cause: { errno: Errno.FS_Exists } })
+
+  await cp(sourcePath, destPath, { recursive: true })
   return ctx.json({ path: destPath, message: '操作成功' })
 })
