@@ -4,6 +4,7 @@ export enum Errno {
   FS_Error,
   FS_Not_Dir,
   FS_Exists,
+  FS_Not_Exists,
   FS_Not_Found,
   FS_No_Permissions,
   FS_Not_Permitted
