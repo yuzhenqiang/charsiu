@@ -1,9 +1,10 @@
-import { Hono } from 'hono'
+import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { storage } from './routes/storage'
 import { HTTPException } from 'hono/http-exception'
 import { Errno } from '../interface/errno'
+import { swaggerUI } from '@hono/swagger-ui'
 
-export const app = new Hono()
+export const app = new OpenAPIHono()
 
 // 错误处理
 app.onError(async (err, ctx) => {
@@ -52,6 +53,16 @@ app.get('/', (c) => {
 })
 
 app.route('/storage', storage)
+
+app.get('/swagger', swaggerUI({ url: '/doc' }))
+
+app.doc('/doc', {
+  info: {
+    title: 'Charsui API',
+    version: 'v1'
+  },
+  openapi: '3.1.0'
+})
 
 const charsuiServer = Bun.serve({
   port: 3001,
