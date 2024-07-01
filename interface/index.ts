@@ -1,4 +1,5 @@
 import { z } from '@hono/zod-openapi'
+import { Errno } from './errno'
 
 export const FileItemSchema = z.object({
   name: z.string().describe('文件名称').openapi({ example: 'hello.txt' }),
@@ -15,4 +16,8 @@ export type FileItem = z.infer<typeof FileItemSchema>
 export const ResponseSchema = z.object({
   success: z.boolean(),
   message: z.string().optional()
+})
+
+export const ResponseErrorSchema = ResponseSchema.extend({
+  errno: z.nativeEnum(Errno)
 })

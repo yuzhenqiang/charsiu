@@ -1,14 +1,18 @@
-import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
+import { OpenAPIHono } from '@hono/zod-openapi'
 import { storage } from './routes/storage'
 import { HTTPException } from 'hono/http-exception'
 import { Errno } from '../interface/errno'
 import { swaggerUI } from '@hono/swagger-ui'
+import { HTTPResponseError } from 'hono/types'
+import { Context } from 'hono'
+import { StatusCode } from 'hono/utils/http-status'
 
 export const app = new OpenAPIHono()
 
-// 错误处理
-app.onError(async (err, ctx) => {
-  let status = 500
+type ServerError = HTTPResponseError | Error;
+const errorHandler = (err: ServerError, ctx: Context) => {
+  console.log('errorHandler', err)
+  let status: StatusCode = 500
   let errno = Errno.Internal_Error
   let message = '服务器内部错误'
 
@@ -18,6 +22,12 @@ app.onError(async (err, ctx) => {
       errno = err.cause.errno as Errno
     }
     status = err.status
+  }
+
+  if (err.name === 'ZodError') {
+    status = 400
+    errno = Errno.Zod_Error
+    message = '请求参数错误'
   }
 
   if (err instanceof Error && 'code' in err && 'errno' in err) {
@@ -39,17 +49,25 @@ app.onError(async (err, ctx) => {
         errno = Errno.FS_Error
     }
   }
+  return ctx.json({ message, errno }, status)
+}
 
-  return new Response(JSON.stringify({ message, errno }), {
-    status,
-    headers: {
-      'content-type': 'application/json'
+// 错误处理
+app.onError((err, ctx) => { throw err })
+
+app.use(async (ctx, next) => {
+  try {
+    await next()
+    if (ctx.res.status === 400 && ctx.res.headers.get('Content-Type')?.startsWith('application/json')) {
+      const copy = ctx.res.clone()
+      const data = await copy.json()
+      if (typeof data === 'object' && typeof data.error === 'object' && data.error.name === 'ZodError') {
+        throw data
+      }
     }
-  })
-})
-
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
+  } catch (err) {
+    return errorHandler(err as ServerError, ctx)
+  }
 })
 
 app.route('/storage', storage)
