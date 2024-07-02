@@ -1,4 +1,4 @@
-import { OpenAPIHono } from '@hono/zod-openapi'
+import { OpenAPIHono, z } from '@hono/zod-openapi'
 import { storage } from './routes/storage'
 import { HTTPException } from 'hono/http-exception'
 import { Errno } from '../interface/errno'
@@ -9,9 +9,8 @@ import { StatusCode } from 'hono/utils/http-status'
 
 export const app = new OpenAPIHono()
 
-type ServerError = HTTPResponseError | Error;
+type ServerError = HTTPResponseError | z.ZodError | Error;
 const errorHandler = (err: ServerError, ctx: Context) => {
-  console.log('errorHandler', err)
   let status: StatusCode = 500
   let errno = Errno.Internal_Error
   let message = '服务器内部错误'
@@ -24,7 +23,7 @@ const errorHandler = (err: ServerError, ctx: Context) => {
     status = err.status
   }
 
-  if (err.name === 'ZodError') {
+  if (typeof err == 'object' && 'name' in err && err.name === 'ZodError') {
     status = 400
     errno = Errno.Zod_Error
     message = '请求参数错误'
@@ -49,7 +48,11 @@ const errorHandler = (err: ServerError, ctx: Context) => {
         errno = Errno.FS_Error
     }
   }
-  return ctx.json({ message, errno }, status)
+
+  return ctx.res = new Response(
+    JSON.stringify({ success: false, message, errno }),
+    { status, headers: { 'Content-Type': 'application/json' } }
+  )
 }
 
 // 错误处理
@@ -62,7 +65,7 @@ app.use(async (ctx, next) => {
       const copy = ctx.res.clone()
       const data = await copy.json()
       if (typeof data === 'object' && typeof data.error === 'object' && data.error.name === 'ZodError') {
-        throw data
+        throw data.error
       }
     }
   } catch (err) {
