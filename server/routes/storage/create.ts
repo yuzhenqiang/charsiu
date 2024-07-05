@@ -1,7 +1,7 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { HTTPException } from "hono/http-exception";
 import { ResponseSchema } from "~/interface";
-import { getRealPath, validStoragePath } from "~/server/utils/storage";
+import { getRealPath, validStoragePath } from "~/server/libs/storage";
 import { mkdir, exists } from 'node:fs/promises'
 import { write } from 'bun';
 import { Errno } from "~/interface/errno";

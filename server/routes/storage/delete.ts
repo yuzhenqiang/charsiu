@@ -2,7 +2,7 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { HTTPException } from "hono/http-exception";
 import { ResponseSchema } from "~/interface";
 import { Errno } from "~/interface/errno";
-import { getRealPath, validStoragePath } from "~/server/utils/storage";
+import { getRealPath, validStoragePath } from "~/server/libs/storage";
 import { rm } from 'node:fs/promises'
 
 const api = new OpenAPIHono()

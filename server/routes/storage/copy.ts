@@ -3,7 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import { exists, cp } from 'node:fs/promises'
 import { ResponseSchema } from "~/interface";
 import { Errno } from "~/interface/errno";
-import { getRealPath, validStoragePath } from "~/server/utils/storage";
+import { getRealPath, validStoragePath } from "~/server/libs/storage";
 
 const api = new OpenAPIHono()
 

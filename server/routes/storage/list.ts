@@ -4,7 +4,7 @@ import { readdir, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import mime from 'mime'
 import { FileItem, FileItemSchema, ResponseSchema } from "~/interface";
-import { getRealPath, validStoragePath } from "~/server/utils/storage";
+import { getRealPath, validStoragePath } from "~/server/libs/storage";
 import { Errno } from "~/interface/errno";
 
 const router = new OpenAPIHono()
